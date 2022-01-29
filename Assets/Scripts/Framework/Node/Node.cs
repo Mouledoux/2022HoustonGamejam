@@ -3,6 +3,11 @@ using System.Collections.Generic;
 
 namespace Mouledoux.Node
 {
+    public interface NodeComponent
+    {
+        public Node GetNode();
+    }
+
     public class Node
     {
         private List<Node> m_neighbors;
