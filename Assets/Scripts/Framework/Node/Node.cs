@@ -151,7 +151,10 @@ namespace Mouledoux.Node
         // ---------- ---------- ---------- ---------- ---------- ---------- ---------- ---------- ---------- ----------
         public int AddInformation(object a_info)
         {
-            m_information.Add(a_info);
+            if(!m_information.Contains(a_info))
+            {
+                m_information.Add(a_info);
+            }
             return 0;
         }
 

@@ -52,7 +52,7 @@ public class WorldSpawner : MonoBehaviour
     {
 
         mapTexture = Perlin.GeneratePerlinTexture(perlinSeed, (int)cols * 10, (int)rows * 10, (int)xOffset, (int)zOffset, biomeScale, elevationScale, temperatureScale);
-        StartCoroutine(GenerateNewHexGrid(cols, rows, mapTexture));
+        StartCoroutine(GenerateNewHexGrid(cols, rows));
     }
 
 
@@ -93,12 +93,12 @@ public class WorldSpawner : MonoBehaviour
 
 
     // ---------- ---------- ---------- ---------- ---------- ---------- ---------- ---------- ---------- ----------
-    public IEnumerator GenerateNewHexGrid(uint a_xSize, uint a_ySize, Texture2D a_sampleTexture)
+    public IEnumerator GenerateNewHexGrid(uint a_xSize, uint a_ySize)
     {
         GameObject gridCell;
         
-        int txWidth = a_sampleTexture.width;
-        int txHeight = a_sampleTexture.height;
+        int txWidth = (int)a_xSize;
+        int txHeight = (int)a_ySize;
 
         int pixX, pixY;
         float hueSample, satSample, valSample;
@@ -130,51 +130,52 @@ public class WorldSpawner : MonoBehaviour
 
 
                 // biome, elevation, temperature
-                Color.RGBToHSV(a_sampleTexture.GetPixel(pixX, pixY), out hueSample, out satSample, out valSample);
+                Color.RGBToHSV(mapTexture.GetPixel(pixX, pixY), out hueSample, out satSample, out valSample);
 
                 isWall = edgesAreWalls && (IsEdge(i, cols) || IsEdge(j, rows));
 
                 gridCell = Instantiate(cellNodePrefab);
 
-                pos = new Vector3(
-                    ((-cols / 2) + i) * xOffset,
-                    0,
-                    (((-rows / 2) + j) + (hexOffset * 0.5f)) * zOffset);
 
-                scale = isWall ? new Vector3(1f, (maxHeight + 1f), 1f) :
-                Vector3.one + Vector3.up * ((float)(satSample * maxHeight));
-
+                float px = ((-cols / 2) + i) * xOffset;
+                float py = 0;
+                float pz = ((-rows / 2) + j) + (hexOffset * 0.5f) * zOffset;
 
                 gridCell.transform.parent = transform;
+
+                pos = new Vector3(px, py, pz);
+                scale = isWall ? new Vector3(1f, (maxHeight + 1f), 1f) : Vector3.one;
 
                 gridCell.transform.localPosition = pos * 2f;
                 gridCell.transform.Rotate(Vector3.up, 30);
                 gridCell.transform.localScale = scale;               
 
+                gridNodes[i, j] = gridCell;
+
+                //Set node -----
+                {
+                    Node thisNode = gridCell.GetComponent<NodeComponent>().GetNode();
+                    thisNode.AddInformation(new Vector3(hueSample, satSample, valSample));
+
+                    if(j > 0)
+                    {
+                        thisNode.AddNeighbor(gridNodes[i, j - 1].GetComponent<NodeComponent>().GetNode());
+                    }
+
+                    if(i > 0)
+                    {
+                        int nextJ = j + (hexOffset * 2 - 1);
 
 
-                // Set node neighbors -----
-                // {
-                //     if(j > 0)
-                //     {
-                //         gridNodes[i, j].nodeData.AddNeighbor(gridNodes[i, j - 1].nodeData);
-                //     }
+                        thisNode.AddNeighbor(gridNodes[i - 1, j].GetComponent<NodeComponent>().GetNode());
 
-                //     if(i > 0)
-                //     {
-                //         int nextJ = j + (hexOffset * 2 - 1);
-
-
-                //         gridNodes[i, j].nodeData.AddNeighbor(gridNodes[i - 1, j].nodeData);
-
-                //         if(nextJ >= 0 && nextJ < rows)
-                //         {
-                //             gridNodes[i, j].nodeData.AddNeighbor(gridNodes[i - 1, nextJ].nodeData);
-                //         }
-                //     }
-                // }
+                        if(nextJ >= 0 && nextJ < rows)
+                        {
+                            thisNode.AddNeighbor(gridNodes[i - 1, nextJ].GetComponent<NodeComponent>().GetNode());
+                        }
+                    }
+                }
             }
-
 
             yield return null;
         }
