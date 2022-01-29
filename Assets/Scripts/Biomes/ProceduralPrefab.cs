@@ -29,11 +29,9 @@ public class ProceduralPrefab : ScriptableObject
     public float m_maxTemperature;
 
 
-
     public float averageBiome => (m_minBiomeVal + m_maxBiomeVal) / 2f;
     public float averageElevation => (m_minElevation + m_maxElevation) / 2f;
     public float averageTemperature => (m_minTemperature + m_maxTemperature) / 2f;
-
 
 
     [Space, SerializeField]
@@ -54,56 +52,10 @@ public class ProceduralPrefab : ScriptableObject
         m_maxTemperature = a_maxTemperature;
     }
 
-    public GameObject BuildProPrefabInstance(float a_biome, float a_elevation, float a_temperature)
-    {
-        string instanceName = $"{name}_proInstance";
-        GameObject proInstance = m_prefab;
-        
-        if(proInstance != null)
-        {
-            proInstance = Instantiate(proInstance);
-        }
-        else if(proInstance == null && m_subPrefabs.Length > 0)
-        {
-            proInstance = Instantiate(new GameObject(instanceName));
-        }
-        else
-        {
-            return null;
-        }
-        
-
-        foreach(ProceduralPrefab p in m_subPrefabs)
-        {
-            if(p.CheckProceduralValues(a_biome, a_elevation, a_temperature))
-            {
-            GameObject subInstance = p.BuildProPrefabInstance(a_biome, a_elevation, a_temperature);
-
-            if(subInstance != null)
-            {
-                subInstance = Instantiate(subInstance, proInstance.transform);
-                subInstance.transform.localPosition = Vector3.zero;
-                subInstance.transform.localRotation = Quaternion.identity;
-            }
-            }
-        }
-        
-
-        return proInstance;
-    }
-
-    public GameObject GetProPrefab(float biome_, float elevation_, float temperature_)
+    public GameObject GetPrefab(float a_biome, float a_elevation, float a_temperature)
     {
         float bias = float.MaxValue;
-        return GetSubPrefabs(biome_, elevation_, temperature_, ref bias, null).m_prefab;
-    }
-
-    private bool CheckProceduralValues(float a_biome, float a_elevation, float a_temperature)
-    {
-        return 
-            a_biome >= m_minBiomeVal && a_biome <= m_maxBiomeVal &&
-            a_elevation >= m_minElevation && a_elevation <= m_maxElevation &&
-            a_temperature >= m_minTemperature && a_temperature <= m_maxTemperature;
+        return GetSubPrefabs(a_biome, a_elevation, a_temperature, ref bias, null).m_prefab;
     }
 
     private ProceduralPrefab GetSubPrefabs(float biome_, float elevation_, float temperature_, ref float bias_, ProceduralPrefab parentBiome = null)
@@ -128,6 +80,11 @@ public class ProceduralPrefab : ScriptableObject
             tTemperatureMin = getSubOffset(parentBiome.m_minTemperature, parentBiome.m_maxTemperature, m_minTemperature);
             tTemperatureMax = getSubOffset(parentBiome.m_minTemperature, parentBiome.m_maxTemperature, m_maxTemperature);
         }
+
+        if(biome_ < tBiomeMin || biome_ > tBiomeMax ||
+            elevation_ < tElevationMin || elevation_ > tElevationMax ||
+                temperature_ < tTemperatureMin || temperature_ > tTemperatureMax)
+                    return null;
 
         float biomeBias = (tBiomeMax - tBiomeMin);
         float elevationBias = (tElevationMax - tElevationMin);

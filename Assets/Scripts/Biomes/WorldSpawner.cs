@@ -51,7 +51,7 @@ public class WorldSpawner : MonoBehaviour
     private void Start()
     {
 
-        mapTexture = Perlin.GeneratePerlinTexture(perlinSeed, (int)cols * 10, (int)rows * 10, (int)xOffset, (int)zOffset, biomeScale, elevationScale, temperatureScale);
+        //mapTexture = Perlin.GeneratePerlinTexture(perlinSeed, (int)cols * 10, (int)rows * 10, (int)xOffset, (int)zOffset, biomeScale, elevationScale, temperatureScale);
         StartCoroutine(GenerateNewHexGrid(cols, rows));
     }
 
@@ -101,7 +101,6 @@ public class WorldSpawner : MonoBehaviour
         int txHeight = (int)a_ySize;
 
         int pixX, pixY;
-        float hueSample, satSample, valSample;
 
         int hexOffset;
         Vector3 pos;
@@ -113,9 +112,6 @@ public class WorldSpawner : MonoBehaviour
             return index == 0 || index == max - 1;
         };
 
-
-
-        //ClearBoard();
         cols = a_xSize;
         rows = a_ySize;
         gridNodes = new GameObject[cols, rows];
@@ -128,53 +124,24 @@ public class WorldSpawner : MonoBehaviour
                 pixX = (int)(((float)i/cols) * txWidth);
                 pixY = (int)(((float)j/rows) * txHeight);
 
-
-                // biome, elevation, temperature
-                Color.RGBToHSV(mapTexture.GetPixel(pixX, pixY), out hueSample, out satSample, out valSample);
-
                 isWall = edgesAreWalls && (IsEdge(i, cols) || IsEdge(j, rows));
 
                 gridCell = Instantiate(cellNodePrefab);
 
-
-                float px = ((-cols / 2) + i) * xOffset;
+                float px = (i) * xOffset;
                 float py = 0;
-                float pz = ((-rows / 2) + j) + (hexOffset * 0.5f) * zOffset;
+                float pz = (j) + (hexOffset * 0.5f) * zOffset;
 
                 gridCell.transform.parent = transform;
 
                 pos = new Vector3(px, py, pz);
                 scale = isWall ? new Vector3(1f, (maxHeight + 1f), 1f) : Vector3.one;
 
-                gridCell.transform.localPosition = pos * 2f;
+                gridCell.transform.localPosition = pos;
                 gridCell.transform.Rotate(Vector3.up, 30);
                 gridCell.transform.localScale = scale;               
 
                 gridNodes[i, j] = gridCell;
-
-                //Set node -----
-                {
-                    Node thisNode = gridCell.GetComponent<NodeComponent>().GetNode();
-                    thisNode.AddInformation(new Vector3(hueSample, satSample, valSample));
-
-                    if(j > 0)
-                    {
-                        thisNode.AddNeighbor(gridNodes[i, j - 1].GetComponent<NodeComponent>().GetNode());
-                    }
-
-                    if(i > 0)
-                    {
-                        int nextJ = j + (hexOffset * 2 - 1);
-
-
-                        thisNode.AddNeighbor(gridNodes[i - 1, j].GetComponent<NodeComponent>().GetNode());
-
-                        if(nextJ >= 0 && nextJ < rows)
-                        {
-                            thisNode.AddNeighbor(gridNodes[i - 1, nextJ].GetComponent<NodeComponent>().GetNode());
-                        }
-                    }
-                }
             }
 
             yield return null;

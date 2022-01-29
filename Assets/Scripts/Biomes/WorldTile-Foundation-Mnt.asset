@@ -12,8 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0a77204f7ff9115419f32a4e4a96a07a, type: 3}
   m_Name: WorldTile-Foundation-Mnt
   m_EditorClassIdentifier: 
-  m_prefab: {fileID: 9212788782310285638, guid: 3510fdebfff95f34d91d49ade82bb002,
-    type: 3}
+  m_prefab: {fileID: 100000, guid: 95f164187b159cb4ab72ef930698a4d6, type: 3}
   m_minBiomeVal: 0
   m_maxBiomeVal: 1
   m_minElevation: 0

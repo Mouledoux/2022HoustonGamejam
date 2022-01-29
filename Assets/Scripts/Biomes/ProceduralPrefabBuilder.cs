@@ -3,35 +3,43 @@ using System.Collections.Generic;
 using UnityEngine;
 using Mouledoux.Node;
 
-public class ProceduralPrefabBuilder : MonoBehaviour, ITraversable, NodeComponent
+public class ProceduralPrefabBuilder : MonoBehaviour, NodeComponent
 {
+    public float m_biomeValue;
+    public float m_elevationValue;
+    public float m_tempValue;
     public ProceduralPrefab m_proceduralPrefab;
 
     private Node node;
 
-    public ITraversable origin { get => throw new System.NotImplementedException(); set => throw new System.NotImplementedException(); }
-    public float[] coordinates { get => throw new System.NotImplementedException(); set => throw new System.NotImplementedException(); }
-
-    public float fVal => throw new System.NotImplementedException();
-
-    public float gVal { get => throw new System.NotImplementedException(); set => throw new System.NotImplementedException(); }
-    public float hVal { get => throw new System.NotImplementedException(); set => throw new System.NotImplementedException(); }
-    public float[] pathingValues { get => throw new System.NotImplementedException(); set => throw new System.NotImplementedException(); }
-    public bool isOccupied { get => throw new System.NotImplementedException(); set => throw new System.NotImplementedException(); }
-    public bool isTraversable { get => throw new System.NotImplementedException(); set => throw new System.NotImplementedException(); }
+    static Texture2D tex;
 
     void Start()
     {
-        node.AddInformation(m_proceduralPrefab);
-        Vector3 perlinVals = GetNode().GetInformation<Vector3>()[0];
+        Vector3 pos = transform.position;
+        int size = 128;
 
-        BuildProInstance(perlinVals.x, perlinVals.y, perlinVals.z);
+        if(tex == null)
+        {
+            tex = Perlin.GeneratePerlinTexture("123123", size, size, 0, 0);
+        }
 
+        Color color = tex.GetPixel((int)(pos.x / size), (int)(pos.z / size));
+        Color.RGBToHSV(color, out pos.x, out pos.y, out pos.z);
+
+        m_biomeValue = pos.x;
+        m_elevationValue = pos.y;
+        m_tempValue = pos.z;
+        
+        BuildProInstance(pos.x, pos.y, pos.z);
+
+        transform.localPosition += Vector3.up * pos.y;
     }
 
     public void BuildProInstance(float a_biome, float a_elevation, float a_temperature)
     {
-        GameObject proInstance = m_proceduralPrefab.BuildProPrefabInstance(a_biome, a_elevation, a_temperature);
+        GameObject proInstance = m_proceduralPrefab.GetPrefab(a_biome, a_elevation, a_temperature);
+        Instantiate(proInstance, transform);
     }
 
     public Node GetNode()
@@ -42,15 +50,5 @@ public class ProceduralPrefabBuilder : MonoBehaviour, ITraversable, NodeComponen
         }
 
         return node;
-    }
-
-    public ITraversable[] GetConnectedTraversables()
-    {
-        throw new System.NotImplementedException();
-    }
-
-    public int CompareTo(ITraversable other)
-    {
-        throw new System.NotImplementedException();
     }
 }

@@ -154,12 +154,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cellNodePrefab: {fileID: 4889359914827425973, guid: 7fa7c2398d1db1943b6dfb1e139f313a,
     type: 3}
-  _rows: 3
-  _cols: 3
+  _rows: 10
+  _cols: 10
   maxHeight: 3
   edgesAreWalls: 0
-  xOffset: 0
-  zOffset: 0
+  xOffset: 0.86
+  zOffset: 1
   perlinSeed: 123123
   biomeScale: 2
   elevationScale: 2
