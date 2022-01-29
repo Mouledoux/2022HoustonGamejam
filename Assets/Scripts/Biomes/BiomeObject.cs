@@ -3,11 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "NewBiome", menuName = "Biome/Biome")]
-public class Biome : ScriptableObject
+public class BiomeObject : ScriptableObject
 {
-    public GameObject biomeTile;
-    public Material biomeMaterial;
-    public GameObject biomeDeco;
+    public GameObject prefab;
 
 
     [Space]
@@ -16,18 +14,12 @@ public class Biome : ScriptableObject
     [Range(0f, 1f)]
     public float maxBiomeVal;
 
-    public float averageBiome => (minBiomeVal + maxBiomeVal) / 2f;
-
-
 
     [Space]
     [Range(0f, 1f)]
     public float minElevation;
     [Range(0f, 1f)]
     public float maxElevation;
-
-    public float averageElevation => (minElevation + maxElevation) / 2f;
-
 
 
     [Space]
@@ -36,15 +28,19 @@ public class Biome : ScriptableObject
     [Range(0f, 1f)]
     public float maxTemperature;
 
+
+
+    public float averageBiome => (minBiomeVal + maxBiomeVal) / 2f;
+    public float averageElevation => (minElevation + maxElevation) / 2f;
     public float averageTemperature => (minTemperature + maxTemperature) / 2f;
 
 
 
-    [Space]
-    public Biome[] subBiomes;
+    [Space, SerializeField]
+    private BiomeObject[] subBiomes;
 
 
-    public Biome(float minBiome_ = 0f, float maxBiome_ = 1f,
+    public BiomeObject(float minBiome_ = 0f, float maxBiome_ = 1f,
         float minElevation_ = 0f, float maxElevation_ = 1f,
         float minTemperature_ = 0f, float maxTemperature_ = 1f)
     {
@@ -58,10 +54,14 @@ public class Biome : ScriptableObject
         maxTemperature = maxTemperature_;
     }
 
-
-    public Biome GetSubBiome(float biome_, float elevation_, float temperature_, ref float bias_, Biome parentBiome = null)
+    public GameObject GetBiomePrefab(float biome_, float elevation_, float temperature_)
     {
-        
+        float bias = float.MaxValue;
+        return GetSubBiome(biome_, elevation_, temperature_, ref bias, null).prefab;
+    }
+
+    private BiomeObject GetSubBiome(float biome_, float elevation_, float temperature_, ref float bias_, BiomeObject parentBiome = null)
+    {
         System.Func<float, float, float, float> getSubOffset = (pMin, pMax, cMod) => (pMin + (pMax - pMin) * cMod);
 
         float tBiomeMin = minBiomeVal;
@@ -95,10 +95,10 @@ public class Biome : ScriptableObject
 
         if(bias <= bias_)
         {
-            Biome sub = null;
-            foreach(Biome b in subBiomes)
+            BiomeObject sub = null;
+            foreach(BiomeObject b in subBiomes)
             {
-                Biome temp = b.GetSubBiome(biome_, elevation_, temperature_, ref bias, this);
+                BiomeObject temp = b.GetSubBiome(biome_, elevation_, temperature_, ref bias, this);
                 sub = temp == null ? sub : temp;
             }
             if(sub != null) return sub;
