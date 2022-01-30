@@ -27,20 +27,7 @@ public class WorldSpawner : MonoBehaviour
     public bool edgesAreWalls;
 
     public float xOffset, zOffset;
-
-    [Header("Perlin Generation")]
-    public string perlinSeed;
-    public float biomeScale = 2f;
-    public float elevationScale = 2f;
-    public float temperatureScale = 2f;
     
-    [Space]
-    public float perlinOffsetX;
-    public float perlinOffsetY;
-
-
-    [Header("Custom Map!")]
-    public Texture2D mapTexture;
     public GameObject[,] gridNodes;
 
 

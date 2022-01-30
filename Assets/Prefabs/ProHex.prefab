@@ -44,4 +44,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b787e15d9c462b84bb7cf42d051932ca, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_proceduralPrefab: {fileID: 11400000, guid: 983c94dd8bba2b344b0e496e3583195b, type: 2}
+  m_biomeValue: 0
+  m_elevationValue: 0
+  m_tempValue: 0
+  m_proceduralPrefab: {fileID: 9212788782310285638, guid: 3510fdebfff95f34d91d49ade82bb002,
+    type: 3}
