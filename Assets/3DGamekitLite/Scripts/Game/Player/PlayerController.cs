@@ -62,7 +62,7 @@ namespace Gamekit3D
         // These constants are used to ensure Ellen moves and behaves properly.
         // It is advised you don't change them without fully understanding what they do in code.
         const float k_AirborneTurnSpeedProportion = 5.4f;
-        const float k_GroundedRayDistance = 1f;
+        const float k_GroundedRayDistance = 2f;
         const float k_JumpAbortSpeed = 10f;
         const float k_MinEnemyDotCoeff = 0.2f;
         const float k_InverseOneEighty = 1f / 180f;

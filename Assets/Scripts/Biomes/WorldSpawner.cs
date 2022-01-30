@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -6,8 +6,7 @@ using Mouledoux.Node;
 
 public class WorldSpawner : MonoBehaviour
 {
-    public Biome worldProfile;
-    private Biome[] biomes;
+    public GameObject cellNodePrefab;
 
 
     [Header("Grid Dimensions")]
@@ -42,7 +41,7 @@ public class WorldSpawner : MonoBehaviour
 
     [Header("Custom Map!")]
     public Texture2D mapTexture;
-    public ITraversable[,] gridNodes;
+    public GameObject[,] gridNodes;
 
 
 
@@ -52,6 +51,8 @@ public class WorldSpawner : MonoBehaviour
     private void Start()
     {
 
+        //mapTexture = Perlin.GeneratePerlinTexture(perlinSeed, (int)cols * 10, (int)rows * 10, (int)xOffset, (int)zOffset, biomeScale, elevationScale, temperatureScale);
+        StartCoroutine(GenerateNewHexGrid(cols, rows));
     }
 
 
@@ -66,7 +67,7 @@ public class WorldSpawner : MonoBehaviour
         {
             if(Input.GetKeyDown(KeyCode.Q))
             {
-                StartCoroutine(GenerateNewHexGrid(cols, rows, mapTexture));
+                //StartCoroutine(GenerateNewHexGrid(cols, rows, mapTexture == null ? GeneratePerlinTexture(perlinSeed, biomeScale, elevationScale, temperatureScale) : mapTexture));
             }
         }
     }
@@ -79,11 +80,10 @@ public class WorldSpawner : MonoBehaviour
         if(gridNodes == null)
             return false;
 
-        foreach (Node node in gridNodes)
+        foreach (GameObject node in gridNodes)
         {
-            GameObject[] nodeObject = node.GetInformation<GameObject>();
-            if(nodeObject.Length > 0)
-                Destroy(nodeObject[0]);
+            GameObject nodeObject = node;
+            Destroy(nodeObject);
         }
 
         gridNodes = null;
@@ -93,15 +93,14 @@ public class WorldSpawner : MonoBehaviour
 
 
     // ---------- ---------- ---------- ---------- ---------- ---------- ---------- ---------- ---------- ----------
-    public IEnumerator GenerateNewHexGrid(uint a_xSize, uint a_ySize, Texture2D a_sampleTexture)
+    public IEnumerator GenerateNewHexGrid(uint a_xSize, uint a_ySize)
     {
         GameObject gridCell;
         
-        int txWidth = a_sampleTexture.width;
-        int txHeight = a_sampleTexture.height;
+        int txWidth = (int)a_xSize;
+        int txHeight = (int)a_ySize;
 
         int pixX, pixY;
-        float hueSample, satSample, valSample;
 
         int hexOffset;
         Vector3 pos;
@@ -113,12 +112,9 @@ public class WorldSpawner : MonoBehaviour
             return index == 0 || index == max - 1;
         };
 
-
-
-        ClearBoard();
         cols = a_xSize;
         rows = a_ySize;
-        gridNodes = new ITraversable[cols, rows];
+        gridNodes = new GameObject[cols, rows];
 
         for(int i = 0; i < cols; i++)
         {
@@ -128,64 +124,26 @@ public class WorldSpawner : MonoBehaviour
                 pixX = (int)(((float)i/cols) * txWidth);
                 pixY = (int)(((float)j/rows) * txHeight);
 
-
-                // biome, elevation, temperature
-                Color.RGBToHSV(a_sampleTexture.GetPixel(pixX, pixY), out hueSample, out satSample, out valSample);
-
                 isWall = edgesAreWalls && (IsEdge(i, cols) || IsEdge(j, rows));
 
-                float initBias = float.MaxValue;
-                Biome biome = worldProfile.GetSubBiome(hueSample, satSample, valSample, ref initBias);
+                gridCell = Instantiate(cellNodePrefab);
 
-                gridCell = isWall ? worldProfile.biomeTile : biome.biomeTile;
-                gridCell = gridCell == null ? worldProfile.subBiomes[0].biomeTile : gridCell;
-                gridCell = Instantiate(gridCell);
+                float px = (i) * xOffset;
+                float py = 0;
+                float pz = (j) + (hexOffset * 0.5f) * zOffset;
 
-                pos = new Vector3(
-                    ((-cols / 2) + i) * xOffset,
-                    0,
-                    (((-rows / 2) + j) + (hexOffset * 0.5f)) * zOffset);
-
-                scale = isWall ? new Vector3(1f, (maxHeight + 1f), 1f) :
-                Vector3.one + Vector3.up * ((int)(satSample * maxHeight));
-
-
-                gridCell.name = $"{biome.name}[{i}, {j}]";
                 gridCell.transform.parent = transform;
 
-                gridCell.transform.localPosition = pos * 2f;
+                pos = new Vector3(px, py, pz);
+                scale = isWall ? new Vector3(1f, (maxHeight + 1f), 1f) : Vector3.one;
+
+                gridCell.transform.localPosition = pos;
                 gridCell.transform.Rotate(Vector3.up, 30);
-                gridCell.transform.localScale = scale;
+                gridCell.transform.localScale = scale;               
 
-
-                gridNodes[i, j] = (gridCell.GetComponent<ITraversable>());
-                
-                gridNodes[i, j].coordinates[0] = i;
-                gridNodes[i, j].coordinates[1] = j;
-                gridNodes[i, j].pathingValues[1] = satSample;
-                gridNodes[i, j].isTraversable = !isWall;
-                
-
-                {
-                    // Set the biome material
-                    Renderer cellRenderer;
-                    if(gridCell.TryGetComponent<Renderer>(out cellRenderer))
-                    {
-                        cellRenderer.material = biome.biomeMaterial;
-                    }
-
-                    // Spawn the biome's decoration
-                    if(biome.biomeDeco != null)
-                    {
-                        Vector3 highpoint = gridCell.transform.position + Vector3.up * gridCell.transform.localScale.y / 8f;
-
-                        GameObject deco = Instantiate(biome.biomeDeco);
-                        deco.transform.position = highpoint;
-                        deco.transform.parent = gridCell.transform;
-                    
-                    }
-                }
+                gridNodes[i, j] = gridCell;
             }
+
             yield return null;
         }
     }
