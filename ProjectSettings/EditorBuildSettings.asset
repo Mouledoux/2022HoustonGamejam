@@ -9,7 +9,7 @@ EditorBuildSettings:
     path: Assets/3DGamekitLite/Scenes/Menu.unity
     guid: db71ead94dc9bdb4ea9158ea4f8560ad
   - enabled: 1
-    path: Assets/3DGamekitLite/Scenes/_TemplateScene.unity
+    path: Assets/3DGamekitLite/Scenes/EnemySpawningTester.unity
     guid: a93c8f727f3196941b92761d8a44628c
   m_configObjects:
     com.unity.input.settings: {fileID: 11400000, guid: 8330f2f6b76394042af41a45685410a7,
